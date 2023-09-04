@@ -44,6 +44,9 @@ func main() {
 
 	// Start informers, handled in goroutine chanels
 	informers.Start(ch)
-	// Run controlelrs, running workers to handle events in passed channels
-	c.run(ch)
+	// Run controlelrs, running two workers in parallel to handle events in passed channels
+	if err = c.run(2, ch); err != nil {
+		fmt.Printf("Error running controller: %s", err.Error())
+	}
+
 }

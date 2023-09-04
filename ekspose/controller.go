@@ -47,20 +47,27 @@ func newController(clientset kubernetes.Interface, depInformer appsinformers.Dep
 }
 
 // Run controllers: sync cache and keep running workers until the channel is closed.
-func (c *controller) run(ch <-chan struct{}) {
+func (c *controller) run(workers int, ch <-chan struct{}) error {
+	defer runtime.HandleCrash()
+
+	// As long as the Shutdown is called, the processItem method will return false
+	defer c.queue.ShutDown()
 	fmt.Println("start controller")
 
 	// Make sure informer cache has been synced
 	if !cache.WaitForCacheSync(ch, c.depCacheSyncd) {
-		fmt.Printf("waiting for cache to be synced\n")
+		return fmt.Errorf("failed to wait for caches to sync")
 	}
 
-	go wait.Until(c.worker, 1*time.Second, ch)
+	for i := 0; i < workers; i++ {
+		go wait.Until(c.worker, 1*time.Second, ch)
+	}
 
 	// go routine is non-blocking.
 	// This step is to make the cahnnel keep waiting
 	// if we do not put something into the cahnnel.
 	<-ch
+	return nil
 }
 
 // The worker will keep running processItem until it returns false
@@ -127,11 +134,10 @@ func (c *controller) retry(err error, key interface{}) {
 		c.queue.Forget(key)
 		return
 	}
-
 	// If item is not successfully processed,
 	// check how many times you have retried until 5 times
 	if c.queue.NumRequeues(key) < 5 {
-		klog.Infof("Error syncing pod %v: %v", key, err)
+		fmt.Printf("Error syncing: %v\n", err)
 		c.queue.AddRateLimited(key)
 		return
 	}
