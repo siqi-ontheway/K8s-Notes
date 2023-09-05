@@ -2,26 +2,32 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"time"
 
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/klog/v2"
 )
 
 func main() {
+
+	klog.InitFlags(nil)
+
+	flag.Set("logtostderr", "false")
+	flag.Set("log_file", "/Users/lisiqi/Desktop/K8s-Notes/ekspose/log")
+	flag.Parse()
 
 	// Read kubeconfig (yaml) file to build kubenetes configuration from file
 	kubeconfig := flag.String("kubeconfig", "/Users/lisiqi/.kube/config", "location to your kubeconfig file")
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
 		// Handle error if kubeconfig failed to build
-		fmt.Printf("erorr %s building config from flags\n", err.Error())
+		klog.Errorf("erorr %s building config from flags\n", err.Error())
 		config, err = rest.InClusterConfig()
 		if err != nil {
-			fmt.Printf("error %s, getting inclusterconfig", err.Error())
+			klog.Errorf("error %s, getting inclusterconfig", err.Error())
 		}
 	}
 
@@ -29,7 +35,7 @@ func main() {
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		// Handle error if client set failed to build
-		fmt.Printf("error %s, creating clientset\n", err.Error())
+		klog.Errorf("error %s, creating clientset\n", err.Error())
 	}
 
 	// Create informers to cache reosurces and call k8s API. It watches for updates to k8s resources (add/delete)
@@ -46,7 +52,7 @@ func main() {
 	informers.Start(ch)
 	// Run controlelrs, running two workers in parallel to handle events in passed channels
 	if err = c.run(2, ch); err != nil {
-		fmt.Printf("Error running controller: %s", err.Error())
+		klog.Errorf("Error running controller: %s", err.Error())
 	}
 
 }

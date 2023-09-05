@@ -52,10 +52,11 @@ func (c *controller) run(workers int, ch <-chan struct{}) error {
 
 	// As long as the Shutdown is called, the processItem method will return false
 	defer c.queue.ShutDown()
-	fmt.Println("start controller")
+	klog.Infof("start controller")
 
 	// Make sure informer cache has been synced
 	if !cache.WaitForCacheSync(ch, c.depCacheSyncd) {
+		klog.Errorf("failed to wait for caches to sync")
 		return fmt.Errorf("failed to wait for caches to sync")
 	}
 
@@ -87,12 +88,12 @@ func (c *controller) processItem() bool {
 	defer c.queue.Forget(item)
 	key, err := cache.MetaNamespaceKeyFunc(item)
 	if err != nil {
-		fmt.Printf("getting key from cache %s\n", err.Error())
+		klog.Errorf("getting key from cache %s\n", err.Error())
 	}
 	ns, name, err := cache.SplitMetaNamespaceKey(key)
 
 	if err != nil {
-		fmt.Printf("splitting key into namespace and name %s\n", err.Error())
+		klog.Errorf("splitting key into namespace and name %s\n", err.Error())
 		return false
 	}
 
@@ -101,17 +102,17 @@ func (c *controller) processItem() bool {
 	_, err = c.clientset.AppsV1().Deployments(ns).Get(ctx, name, metaV1.GetOptions{})
 	// If error is that the object is not found in k8s cluster, i.e. the event is deletion
 	if apierrors.IsNotFound(err) {
-		fmt.Printf("deployment %s was deleted\n", name)
+		klog.Infof("deployment %s was deleted\n", name)
 		//delete services, note: here we only consider the case whne the service name is the same as the deployment name
 		err = c.clientset.CoreV1().Services(ns).Delete(ctx, name, metaV1.DeleteOptions{})
 		if err != nil {
-			fmt.Printf("deleting service %s, error %s\n", name, err.Error())
+			klog.Errorf("deleting service %s, error %s\n", name, err.Error())
 			return false
 		}
 		//delete ingress, note: here we only consider the case whne the ingress name is the same as the deployment name
 		err = c.clientset.NetworkingV1().Ingresses(ns).Delete(ctx, name, metaV1.DeleteOptions{})
 		if err != nil {
-			fmt.Printf("deleting ingress %s, error %s\n", name, err.Error())
+			klog.Infof("deleting ingress %s, error %s\n", name, err.Error())
 			return false
 		}
 		return true
@@ -121,7 +122,7 @@ func (c *controller) processItem() bool {
 	if err != nil {
 		//retry
 		c.retry(err, item)
-		fmt.Printf("syncing deployment %s\n", err.Error())
+		klog.Infof("syncing deployment %s\n", err.Error())
 		return false
 	}
 	return true
@@ -137,7 +138,7 @@ func (c *controller) retry(err error, key interface{}) {
 	// If item is not successfully processed,
 	// check how many times you have retried until 5 times
 	if c.queue.NumRequeues(key) < 5 {
-		fmt.Printf("Error syncing: %v\n", err)
+		klog.Infof("Error syncing: %v\n", err)
 		c.queue.AddRateLimited(key)
 		return
 	}
@@ -146,7 +147,7 @@ func (c *controller) retry(err error, key interface{}) {
 	c.queue.Forget(key)
 	// report error
 	runtime.HandleError(err)
-	klog.Infof("Dropping pod %q out of the queue: %v", key, err)
+	klog.Errorf("Dropping pod %q out of the queue: %v", key, err)
 }
 
 // Sync deployment: create service and ingress
@@ -155,7 +156,7 @@ func (c *controller) syncDeployment(ns, name string) error {
 
 	dep, err := c.depLister.Deployments(ns).Get(name)
 	if err != nil {
-		fmt.Printf("getting deployment from lister %s\n", err.Error())
+		klog.Errorf("getting deployment from lister %s\n", err.Error())
 	}
 
 	// create service
@@ -179,7 +180,7 @@ func (c *controller) syncDeployment(ns, name string) error {
 	}
 	s, err := c.clientset.CoreV1().Services(ns).Create(ctx, &svc, metaV1.CreateOptions{})
 	if err != nil {
-		fmt.Printf("creating service %s\n", err.Error())
+		klog.Errorf("creating service %s\n", err.Error())
 	}
 
 	//create ingress
@@ -231,14 +232,14 @@ func createIngress(ctx context.Context, client kubernetes.Interface, svc *coreV1
 
 // Add handler: Add obj to queue
 func (c *controller) handleAdd(obj interface{}) {
-	fmt.Println("Add called")
+	klog.Infof("Add called")
 	// Add obj to queue
 	c.queue.Add(obj)
 }
 
 // Del handler: Add obj to queue
 func (c *controller) handleDel(obj interface{}) {
-	fmt.Println("Del called")
+	klog.Infof("Del called")
 	// Add obj to queue
 	c.queue.Add(obj)
 }
