@@ -11,12 +11,19 @@ import (
 	"k8s.io/klog/v2"
 )
 
+// Define a global flag to save the log to file or to stdout
+var LogToStderr bool
+
 func main() {
 
-	klog.InitFlags(nil)
+	LogToStderr = false
+
+	if LogToStderr {
+		klog.InitFlags(nil)
+		flag.Set("log_file", "./log")
+	}
 
 	flag.Set("logtostderr", "false")
-	flag.Set("log_file", "/Users/lisiqi/Desktop/K8s-Notes/ekspose/log")
 	flag.Parse()
 
 	// Read kubeconfig (yaml) file to build kubenetes configuration from file
@@ -51,7 +58,7 @@ func main() {
 	// Start informers, handled in goroutine chanels
 	informers.Start(ch)
 	// Run controlelrs, running two workers in parallel to handle events in passed channels
-	if err = c.run(2, ch); err != nil {
+	if err = c.run(1, ch); err != nil {
 		klog.Errorf("Error running controller: %s", err.Error())
 	}
 
