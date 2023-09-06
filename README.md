@@ -10,7 +10,8 @@ A custom Kubernetes controller to watch for the creation and deletion of deploym
 
  ## Files
 
- All files are in "ekspose" folder.
+- controller related files are in "ekspose" folder.
+- k8s tutorial learning notes are in "Tutorial.md".
 
 ## Deployment
 ```
