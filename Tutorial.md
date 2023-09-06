@@ -33,3 +33,5 @@ list: kubectl get pods -o wide
 describe: kubectl describe deployments/kubernetes-bootcamp
 
 set image: kubectl set image deployments/kubernetes-bootcamp kubernetes-bootcamp=jocatalin/kubernetes-bootcamp:v2
+
+View the container logs: kubectl logs "$POD_NAME"
