@@ -8,7 +8,7 @@
 
 A custom Kubernetes controller to watch for the creation and deletion of deployments and create/delete services and ingresses accordingly. The controller is containerized and deployed with necessary manifests related to roles and service account.
 
- ## Files
+## Files
 
 - controller related files are in "ekspose" folder.
 - k8s tutorial learning notes are in "Tutorial.md".
@@ -54,6 +54,18 @@ Below is a demo.
 - The kubectl logs after calling the k8s apis
 
 ![image](./img/log.png)
+
+## Code-generator
+
+1. deep copy obejcts
+2. clientset
+3. informers
+4. lister
+'''
+execDir=/Users/lisiqi/go/pkg/mod/k8s.io/code-generator@v0.28.1
+'''
+
+riomous-MacBook-Pro:kluster lisiqi$ "${execDir}"/generate-groups.sh all kluster/pkg/client kluster/pkg/apis siqi.dev:v1alpha1 --go-header-file /Users/lisiqi/go/pkg/mod/k8s.io/gengo@v0.0.0-20220902162205-c0856e24416d/boilerplate/boilerplate.go.txt
 
 ## References
 https://cloud.tencent.com/developer/article/1493250
