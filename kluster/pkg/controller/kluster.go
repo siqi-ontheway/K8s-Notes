@@ -28,12 +28,12 @@ import (
 )
 
 type controller struct {
-	client        kubernetes.Interface            /* Client set to interact with k8s cluster */
+	client        kubernetes.Interface            /* Client set to store and pass the secrete token */
 	klient        klientset.Interface             /* Customized crd kluster klient */
 	kLister       klister.KlusterLister           /* Component of informer to get the resources from cache */
 	klusterSynced cache.InformerSynced            /* To get Status that if the cache is successfully synced, passed from reflector */
 	queue         workqueue.RateLimitingInterface /* FIFO queue so we can add objects to queue when Add/delete functions are called */
-	recorder      record.EventRecorder            /* Event recorder for the cr*/
+	recorder      record.EventRecorder            /* Event recorder for the cr */
 }
 
 var clusterID string
