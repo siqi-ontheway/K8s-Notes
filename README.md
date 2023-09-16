@@ -92,12 +92,15 @@ controller-gen code add the status to cr by comments
 docker build -t siqili/kluster:0.1.0 .
 docker push siqili/kluster:0.1.0
 kubectl create deployment kluster --image siqili/kluster:0.1.0 --dry-run=client -oyaml > install/deploy.yaml
-kubectl create -f install/deploy.yaml
 
 kubectl create serviceaccount kluster-sa --dry-run=client -oyaml > install/sa.yaml
-kubectl create clusterrole kluster-cr --resource Kluster --verb list,watch --dry-run=client -oyaml > install/clusterrole.yaml
+kubectl create clusterrole kluster-cr --resource kluster --verb list,watch --dry-run=client -oyaml > install/clusterrole.yaml
 kubectl create clusterrolebinding kluster-crb --clusterrole k
 luster-cr --serviceaccount default:kluster-sa --dry-run=client -oyaml > install/crb.yaml
+
+kubectl apply -f install
+
+
 ## References
 https://cloud.tencent.com/developer/article/1493250
 https://github.com/kubernetes/sample-controller

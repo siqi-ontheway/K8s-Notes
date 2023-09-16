@@ -11,3 +11,24 @@ rules:
   verbs:
   - list
   - watch
+- apiGroups:
+  - ""
+  resources:
+  - events
+  - namespaces
+  verbs:
+  - create
+  - get
+- apiGroups:
+  - siqi.dev
+  resources:
+  - klusters/status
+  verbs:
+  - update
+- apiGroups:
+  - siqi.dev
+  resources:
+  - klusters
+  verbs:
+  - get
+  - update

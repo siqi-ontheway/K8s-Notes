@@ -21,4 +21,5 @@ spec:
       - image: siqili/kluster:0.1.0
         name: kluster
         resources: {}
+      serviceAccountName: kluster-sa
 status: {}
