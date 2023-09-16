@@ -67,6 +67,37 @@ execDir=/Users/lisiqi/go/pkg/mod/k8s.io/code-generator@v0.28.1
 
 riomous-MacBook-Pro:kluster lisiqi$ "${execDir}"/generate-groups.sh all kluster/pkg/client kluster/pkg/apis siqi.dev:v1alpha1 --go-header-file /Users/lisiqi/go/pkg/mod/k8s.io/gengo@v0.0.0-20220902162205-c0856e24416d/boilerplate/boilerplate.go.txt
 
+kubectl create secret generic dosecret --from-literal token=DOTOKEN
+
+interface {
+    CreateCluster
+    DeleteCluster
+    GetKubeConfig
+}
+
+
+kubectl patch klusters.siqi.dev/kluster-0 -p '{"metadata":{"finalizers":[]}}' --type=merge
+
+kubectl delete klusters.siqi.dev kluster-0
+kubectl create -f manifests/kluster0.yaml 
+kubectl get klusters.siqi.dev
+
+kluster.go has kluster spec, using which our cluster is created in digital ocean. To do that, so we create do.go which takes kubenetes clientset (to get the token) and klient.spec and make a request to digital ocean api
+
+kluster status is a sub resource
+, which is useful once reflected in printer column
+controller-gen code add the status to cr by comments
+
+
+docker build -t siqili/kluster:0.1.0 .
+docker push siqili/kluster:0.1.0
+kubectl create deployment kluster --image siqili/kluster:0.1.0 --dry-run=client -oyaml > install/deploy.yaml
+kubectl create -f install/deploy.yaml
+
+kubectl create serviceaccount kluster-sa --dry-run=client -oyaml > install/sa.yaml
+kubectl create clusterrole kluster-cr --resource Kluster --verb list,watch --dry-run=client -oyaml > install/clusterrole.yaml
+kubectl create clusterrolebinding kluster-crb --clusterrole k
+luster-cr --serviceaccount default:kluster-sa --dry-run=client -oyaml > install/crb.yaml
 ## References
 https://cloud.tencent.com/developer/article/1493250
 https://github.com/kubernetes/sample-controller

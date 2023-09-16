@@ -7,6 +7,6 @@ COPY go.sum ./
 RUN go mod download
 COPY . .
 
-RUN go build -o /ekspose
+RUN go build -o /kluster
 
-CMD [ "/ekspose" ]
+CMD [ "/kluster" ]

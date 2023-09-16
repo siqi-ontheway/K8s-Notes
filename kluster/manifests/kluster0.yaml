@@ -7,7 +7,7 @@ metadata:
 spec:
   name: kluster-0
   region: "nyc1"
-  version: "1.21.3-do.0"
+  version: "1.27.4-do.0"
   tokenSecret: "default/dosecret"
   nodePools:
     - count: 3
