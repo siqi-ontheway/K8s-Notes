@@ -42,6 +42,14 @@ docker push siqili/ekspose:0.0.1
 - To clear, you can run: 
     - kubectl delete all --all -n ekspose
 
+# Containerization
+
+Service account/Cluster role/Cluster role binding are created in order to run the controller in docker environment.
+```
+kubectl create serviceaccount ekspose-sa --dry-run=client -oyaml > sa.yaml 
+kubectl create clusterrole ekspose-cr --resource deployment --verb list,watch --dry-run=client -oyaml > clusterrole.yaml 
+kubectl create clusterrolebinding ekspose-crb --clusterrole ekspose-cr --serviceaccount default:ekspose-sa --dry-run=client -oyaml > crb.yaml
+```
 
 ## Demo
 
